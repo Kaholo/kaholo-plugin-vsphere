@@ -1,0 +1,35 @@
+{
+    "name": "vCenter",
+    "type": "executer",
+    "main": "app.js",
+    "execProgram": "node",
+    "exposeRoute": false,
+    "imgUrl": "logo.png",
+    "version": "1.0.0",
+    "settings" : [
+        {
+            "name": "USER",
+            "viewName": "username",
+            "type": "vault"
+        },
+        {
+            "name": "PASSWORD",
+            "viewName": "password",
+            "type": "vault"
+        }
+    ],
+    "Methods": [
+        {
+            "name": "powerOn",
+            "viewName": "Power On",
+            "params" :  [
+                {
+                    "name": "host",
+                    "viewName": "host",
+                    "type": "string"
+                }
+            ]
+        }
+    ]
+
+}

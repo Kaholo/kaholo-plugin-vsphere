@@ -1,0 +1,14 @@
+{
+  "name": "kaholo-plugin-vcenter",
+  "version": "1.0.0",
+  "description": "Kaholo Plugin for vCenter",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ilan Yaniv",
+  "license": "ISC",
+  "dependencies": {
+    "unirest": "^0.6.0"
+  }
+}
