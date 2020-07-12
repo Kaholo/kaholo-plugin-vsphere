@@ -1,41 +1,103 @@
-var auth = require('./resources/authentication');
-var vm = require('./resources/vms');
+var request = require('request')
 
-
-function findVMByName(vmName) {
-  return vm.find('filter.names.1=' + vmName).then(resp => {
-     if (null !== resp && null !== resp.body.value && resp.body.value.length > 0) {
-       return resp.body.value[0].vm;
-     }
-     throw "VM not found"
- });
+async function getDC (action, settings) {
+  let host = action.params.host || settings.host
+  let connect = await initialConnect(action, settings);
+  const token = JSON.parse(connect.body).value
+  const cookie = `vmware-api-session-id=${token}`
+  let dcObj = {
+    uri : `https://${host}/rest/vcenter/datacenter`,
+    method: 'GET',
+    rejectUnauthorized: false,
+    headers : {
+      'Authorization': `Bearer ${token}`,
+      'Cookie' : `${cookie}`
+    }
+  }
+  return makeReuqest(dcObj)
 }
 
-function powerOn(vmName){
-  return vm.powerOn(vmName);
-}
-
-function powerOff(vmName){
-  return vm.powerOff(vmName);
-}
-
-function execPowerOn(action, settings) {
-    return auth.login(action,settings).then(()=>{
-      return findVMByName(action.params.vmName)
-    }).then(vm=>{
-      return powerOn(action.params.vmName);
+async function createDC (action, settings) {
+  let host = action.params.host || settings.host
+  let connect = await initialConnect(action, settings);
+  //const token = connect.headers["set-cookie"][0]
+  const token = JSON.parse(connect.body).value
+  const cookie = `vmware-api-session-id=${token}`
+  const dcFolder = action.params.folder
+  const dcName = action.params.name
+  let dcObj = {
+    url : `https://${host}/rest/vcenter/datacenter`,
+    method: 'POST',
+    rejectUnauthorized : false,
+    headers : {
+      //'Cookie' : `${token}`,
+      'Cookie' : `${cookie}`,
+      'Content-Type': 'application/json'
+    },
+    
+    body: JSON.stringify({
+      "spec":{
+        "name":`${dcName}`,
+        "folder":`${dcFolder}`
+      }
     })
- }
+  };
+  return makeReuqest(dcObj)
+}
 
- function execPowerOff(action, settings) {
-  return auth.login(action,settings).then(()=>{
-    return findVMByName(action.params.vmName)
-  }).then(vm=>{
-    return powerOff(action.params.vmName);
-  })
+
+
+//////////// HELPERS ////////////
+
+async function initialConnect (action, settings) {
+  let host = action.params.host || settings.host
+  let user = action.params.user || settings.user
+  let password = action.params.password || settings.password
+  let httpReq = {
+    uri: `https://${host}/rest/com/vmware/cis/session`,
+    method: 'POST',
+    rejectUnauthorized: false,
+    auth : {
+      user : `${user}`,  //'administrator@vsphere.local',
+      password: `${password}`
+    }
+  }; 
+  return new Promise((resolve,reject)=>{
+    request(httpReq, function (err, response, body) {
+      if(err){
+          return reject(err);
+      }
+      if(response.statusCode < 200 || response.statusCode > 300){
+        return reject(response.message);
+      }
+      var cookieValue = response.headers['set-cookie'];
+      httpReq.headers = {'Cookie': cookieValue};
+      // Remove username-password authentication.
+      httpReq.auth = {};
+      resolve(response)
+    });
+  });
+}
+
+function makeReuqest(my_http_options){
+  var x = JSON.stringify(my_http_options)
+  return new Promise((resolve,reject)=>{
+    request(my_http_options, function (err, response, body) {
+      if(err){
+          return reject(err);
+      }
+      if(response.statusCode < 200 || response.statusCode > 300){
+        var b = JSON.stringify(response.body)
+        console.log(`Body: ${b}`)
+        console.log(response.statusCode)
+        return reject(response.statusMessage);
+      }
+      resolve(response);
+    });
+  });
 }
 
 module.exports = {
-  execPowerOff,
-  execPowerOn
-}
+  LIST_DATACENTER_INFO: getDC,
+  CREATE_DATACENTER: createDC
+};

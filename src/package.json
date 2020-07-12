@@ -1,14 +1,16 @@
 {
-  "name": "kaholo-plugin-vcenter",
+  "name": "kaholo-plugin-vsphere",
   "version": "1.0.0",
-  "description": "Kaholo Plugin for vCenter",
+  "description": "Kaholo Plugin for VMWare vSphere",
   "main": "app.js",
+  "dependencies": {
+    "node-vsphere-soap": "0.0.2-5",
+    "vsphere-connect": "^1.1.2"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ilan Yaniv",
-  "license": "ISC",
-  "dependencies": {
-    "unirest": "^0.6.0"
-  }
+  "license": "ISC"
 }
