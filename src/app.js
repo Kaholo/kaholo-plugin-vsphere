@@ -20,17 +20,15 @@ async function getDC (action, settings) {
 async function createDC (action, settings) {
   let host = action.params.host || settings.host
   let connect = await initialConnect(action, settings);
-  //const token = connect.headers["set-cookie"][0]
   const token = JSON.parse(connect.body).value
   const cookie = `vmware-api-session-id=${token}`
-  const dcFolder = action.params.folder
+  const dcFolder = action.params.folder || "group-d1"
   const dcName = action.params.name
   let dcObj = {
     url : `https://${host}/rest/vcenter/datacenter`,
     method: 'POST',
     rejectUnauthorized : false,
     headers : {
-      //'Cookie' : `${token}`,
       'Cookie' : `${cookie}`,
       'Content-Type': 'application/json'
     },
@@ -67,7 +65,7 @@ async function initialConnect (action, settings) {
       if(err){
           return reject(err);
       }
-      if(response.statusCode < 200 || response.statusCode > 300){
+      if(response.statusCode < 200 || response.statusCode > 300){cd 
         return reject(response.message);
       }
       var cookieValue = response.headers['set-cookie'];
