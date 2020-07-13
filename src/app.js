@@ -1,16 +1,16 @@
 var request = require('request')
 
-async function getDC (action, settings) {
-  let host = action.params.host || settings.host
-  let connect = await initialConnect(action, settings);
-  const token = JSON.parse(connect.body).value
-  const cookie = `vmware-api-session-id=${token}`
-  let dcObj = {
-    uri : `https://${host}/rest/vcenter/datacenter`,
+async function listDC (action, settings) {
+  const host = settings.host;
+  const cookie = await getCookie(settings);
+  let url = "";
+  action.params.DCname ? url = `https://${host}/rest/vcenter/datacenter?filter.names.1=${action.params.DCname}` : url = `https://${host}/rest/vcenter/datacenter`
+  
+  const dcObj = {
+    uri : url,
     method: 'GET',
     rejectUnauthorized: false,
     headers : {
-      'Authorization': `Bearer ${token}`,
       'Cookie' : `${cookie}`
     }
   }
@@ -18,12 +18,10 @@ async function getDC (action, settings) {
 }
 
 async function createDC (action, settings) {
-  let host = action.params.host || settings.host
-  let connect = await initialConnect(action, settings);
-  const token = JSON.parse(connect.body).value
-  const cookie = `vmware-api-session-id=${token}`
-  const dcFolder = action.params.folder || "group-d1"
-  const dcName = action.params.name
+  const host = action.params.host || settings.host;
+  const cookie = await getCookie(settings);
+  const dcFolder = action.params.folder || "group-d1";
+  const dcName = action.params.name;
   let dcObj = {
     url : `https://${host}/rest/vcenter/datacenter`,
     method: 'POST',
@@ -43,20 +41,38 @@ async function createDC (action, settings) {
   return makeReuqest(dcObj)
 }
 
+async function deleteDC (action, settings) {
+  const host = settings.host;
+  const cookie = await getCookie(settings);
+  const dcName = action.params.ID;
+  const force = action.params.force;
+  var uri
+  force ? uri = `https://${host}/rest/vcenter/datacenter/${dcName}?force` : uri = `https://${host}/rest/vcenter/datacenter/${dcName}`
+  const dcObj = {
+    url : `${uri}`,
+    method: 'DELETE',
+    rejectUnauthorized : false,
+    headers : {
+      'Cookie' : `${cookie}`,
+    }
+  };
+  console.log(dcObj)
+  return makeReuqest(dcObj)
+}
 
 
 //////////// HELPERS ////////////
 
-async function initialConnect (action, settings) {
-  let host = action.params.host || settings.host
-  let user = action.params.user || settings.user
-  let password = action.params.password || settings.password
-  let httpReq = {
+async function getCookie (settings) {
+  const host = settings.host;
+  const user = settings.user;
+  const password = settings.password;
+  const httpReq = {
     uri: `https://${host}/rest/com/vmware/cis/session`,
     method: 'POST',
     rejectUnauthorized: false,
     auth : {
-      user : `${user}`,  //'administrator@vsphere.local',
+      user : `${user}`, 
       password: `${password}`
     }
   }; 
@@ -65,14 +81,14 @@ async function initialConnect (action, settings) {
       if(err){
           return reject(err);
       }
-      if(response.statusCode < 200 || response.statusCode > 300){cd 
+      if(response.statusCode < 200 || response.statusCode > 300){
         return reject(response.message);
       }
       var cookieValue = response.headers['set-cookie'];
       httpReq.headers = {'Cookie': cookieValue};
       // Remove username-password authentication.
       httpReq.auth = {};
-      resolve(response)
+      resolve(response.headers["set-cookie"][0])
     });
   });
 }
@@ -96,6 +112,7 @@ function makeReuqest(my_http_options){
 }
 
 module.exports = {
-  LIST_DATACENTER_INFO: getDC,
-  CREATE_DATACENTER: createDC
+  LIST_DATACENTER: listDC,
+  CREATE_DATACENTER: createDC,
+  DELETE_DATACENTER: deleteDC
 };

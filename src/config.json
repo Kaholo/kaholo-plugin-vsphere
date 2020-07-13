@@ -4,7 +4,7 @@
   "imgUrl": "logo.png",
   "execProgram": "node",
   "main": "app.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "REST API Wrapper to VMWare vsphere",
   "settings": [
     {
@@ -25,32 +25,12 @@
   ],
   "methods": [
     {
-      "name": "LIST_DATACENTER_INFO",
-      "viewName": "List Datacenter info from vCenter",
+      "name": "LIST_DATACENTER",
+      "viewName": "List datacenter info from vCenter",
       "params": [
         {
-          "name": "user",
-          "viewName": "Username",
-          "type": "string"
-        },
-        {
-          "name": "password",
-          "viewName": "Password",
-          "type": "vault"
-        },
-        {
-          "name": "host",
-          "viewName": "vCenter or Server",
-          "type": "string"
-        },
-        {
-          "name": "datacenters",
-          "viewName": "Datacenters filter",
-          "type": "string"
-        },
-        {
-          "name": "names",
-          "viewName": "names filter",
+          "name":"DCname",
+          "viewName": "Filter by DC name",
           "type": "string"
         }
       ]
@@ -60,21 +40,6 @@
       "viewName": "Create new datacenter",
       "params": [
         {
-          "name": "user",
-          "viewName": "Username",
-          "type": "string"
-        },
-        {
-          "name": "password",
-          "viewName": "Password",
-          "type": "vault"
-        },
-        {
-          "name": "host",
-          "viewName": "vCenter or Server",
-          "type": "string"
-        },
-        {
           "name": "name",
           "viewName": "datacenter name",
           "type": "string"
@@ -83,6 +48,22 @@
           "name": "folder",
           "viewName": "Datacenter folder",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "DELETE_DATACENTER",
+      "viewName": "Delete datacenter",
+      "params": [
+        {
+          "name": "ID",
+          "viewName": "datacenter ID",
+          "type": "string"
+        },
+        {
+          "name": "force",
+          "viewName": "force delete",
+          "type": "boolean"
         }
       ]
     }
