@@ -1,4 +1,4 @@
-var request = require('request')
+const request = require('request')
 
 async function listDC (action, settings) {
   const host = settings.host;
@@ -18,7 +18,7 @@ async function listDC (action, settings) {
 }
 
 async function createDC (action, settings) {
-  const host = action.params.host || settings.host;
+  const host = settings.host;
   const cookie = await getCookie(settings);
   const dcFolder = action.params.folder || "group-d1";
   const dcName = action.params.name;
@@ -33,8 +33,8 @@ async function createDC (action, settings) {
     
     body: JSON.stringify({
       "spec":{
-        "name":`${dcName}`,
-        "folder":`${dcFolder}`
+        "name":dcName,
+        "folder":dcFolder
       }
     })
   };
@@ -46,7 +46,7 @@ async function deleteDC (action, settings) {
   const cookie = await getCookie(settings);
   const dcName = action.params.ID;
   const force = action.params.force;
-  var uri
+  let uri = "";
   force ? uri = `https://${host}/rest/vcenter/datacenter/${dcName}?force` : uri = `https://${host}/rest/vcenter/datacenter/${dcName}`
   const dcObj = {
     url : `${uri}`,
@@ -84,9 +84,8 @@ async function getCookie (settings) {
       if(response.statusCode < 200 || response.statusCode > 300){
         return reject(response.message);
       }
-      var cookieValue = response.headers['set-cookie'];
+      const cookieValue = response.headers['set-cookie'];
       httpReq.headers = {'Cookie': cookieValue};
-      // Remove username-password authentication.
       httpReq.auth = {};
       resolve(response.headers["set-cookie"][0])
     });
@@ -94,14 +93,13 @@ async function getCookie (settings) {
 }
 
 function makeReuqest(my_http_options){
-  var x = JSON.stringify(my_http_options)
   return new Promise((resolve,reject)=>{
     request(my_http_options, function (err, response, body) {
       if(err){
           return reject(err);
       }
       if(response.statusCode < 200 || response.statusCode > 300){
-        var b = JSON.stringify(response.body)
+        const b = JSON.stringify(response.body)
         console.log(`Body: ${b}`)
         console.log(response.statusCode)
         return reject(response.statusMessage);
