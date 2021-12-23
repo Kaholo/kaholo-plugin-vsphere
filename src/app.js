@@ -3,9 +3,8 @@ const request = require('request')
 async function listDC (action, settings) {
   const host = settings.host;
   const cookie = await getCookie(settings);
-  let url = "";
-  action.params.DCname ? url = `https://${host}/rest/vcenter/datacenter?filter.names.1=${action.params.DCname}` : url = `https://${host}/rest/vcenter/datacenter`
-  
+  const url = `https://${host}/rest/vcenter/datacenter${action.params.DCname ? `?filter.names.1=${action.params.DCname}` : ""}`;
+      
   const dcObj = {
     uri : url,
     method: 'GET',
